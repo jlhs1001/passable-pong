@@ -13,6 +13,8 @@ let users = 0;
 
 let pause = false;
 
+let highScore = 0;
+
 let dx = bSpeed;
 let dy = -bSpeed;
 
@@ -21,20 +23,18 @@ let player2 = {w: 10, h: 80, x: 750, y: 300};
 
 let user = 0;
 
+function ballWallCollision() {
+    if ((ball.y + ball.radius) >= 600) {
+        dy = -dy;
+    } else if ((ball.y - ball.radius) <= 0) {
+        dy = -dy;
+    }
 
+}
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/public/index.html');
 });
-
-function ballWallCollision() {
-    if ((ball.y + ball.radius) >= 600) {
-        dx = -dx
-    } else if ((ball.y - ball.radius) <= 0) {
-        dx = -dx
-    }
-
-}
 
 io.on('connection', function (socket) {
     users++;
@@ -59,10 +59,6 @@ io.on('connection', function (socket) {
     socket.on('disconnect', function () {
         console.log('a user disconnected');
         users--
-    });
-
-    socket.on('playerScore', function (playerScore) {
-
     });
 
     socket.on("PlayerBallCollision", function () {
@@ -93,7 +89,35 @@ io.on('connection', function (socket) {
         dy += -1
     });
 
+    socket.on("newP1HighScore", function (playerScore) {
+        if (playerScore > highScore) {
+            highScore = playerScore;
+            socket.broadcast.emit("pushHighScore", highScore);
+        }
+    });
 
+    socket.on("newP2HighScore", function (player2Score) {
+        if (player2Score > highScore) {
+            highScore = player2Score;
+            socket.broadcast.emit("pushHighScore", highScore);
+        }
+    });
+
+    function winLose() {
+        if ((ball.x + ball.radius) >= 800) {
+            socket.broadcast.emit("collision", highScore);
+            player1.y = 300;
+            player2.y = 300;
+            ball.x = 400;
+            ball.y = 500;
+        } else if ((ball.x - ball.radius) <= 0) {
+            socket.broadcast.emit("collision", highScore);
+            player1.y = 300;
+            player2.y = 300;
+            ball.x = 400;
+            ball.y = 500;
+        }
+    }
 
     function emitBallPos() {
         // console.log(ball);
@@ -109,7 +133,8 @@ io.on('connection', function (socket) {
         if (pause !== true) {
             movement();
             emitBallPos();
-            ballWallCollision()
+            ballWallCollision();
+            winLose();
     }
     }
 

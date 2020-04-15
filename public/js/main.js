@@ -11,13 +11,10 @@ let user = 0;
 
 let playerScore = 0;
 let enemyScore = 0;
-let highScore = 0;
+
+let displayHS = 0;
 
 let ball = {};
-
-if (window.localStorage.getItem("hScore") !== null) {
-    highScore = window.localStorage.getItem("hScore");
-}
 
 socket.on('connect', function () {
     console.log("CONNECTED TO SOCKET");
@@ -57,6 +54,29 @@ $(function () {
         ball.r = ballObject.radius;
     });
 
+    socket.on("collision", function (highScore) {
+        if ((ball.x + ball.radius) > 800) {
+            enemyScore++;
+            socket.emit("player2ScoreUp");
+            lives--;
+        }
+        else if ((ball.x - ball.radius) < 0) {
+            playerScore++;
+            socket.emit("player1ScoreUp");
+        }
+        if (lives <= 0) {
+            // ONCLICK: location.reload();
+            pause = true;
+        }
+        if (playerScore >= highScore || enemyScore >= highScore) {
+            socket.emit("newP1HighScore", playerScore);
+            socket.emit("newP2HighScore", enemyScore);
+        }
+    });
+
+    socket.on("pushHighScore", function (highScore) {
+        displayHS = highScore;
+    })
 });
 
 document.addEventListener("keydown", function (e) {
@@ -72,6 +92,7 @@ document.addEventListener("keydown", function (e) {
             break;
         case "Numpad5":
             socket.emit("ballUp");
+            break;
     }
 });
 
@@ -139,7 +160,7 @@ function drawPlayer() {
 
 
 function display() {
-    displayBox.innerText = `P1: ${playerScore} \xa0 P2: ${enemyScore} \xa0 High Score: x \xa0 Lives: ${lives}`
+    displayBox.innerText = `P1: ${playerScore} \xa0 P2: ${enemyScore} \xa0 High Score: ${displayHS} \xa0 Lives: ${lives}`
 }
 
 function drawNet() {
@@ -184,7 +205,6 @@ function update(progress) {
     movement();
     minMaxPaddlePosition(player);
     minMaxPaddlePosition(enemy);
-    winLose();
     display();
     emitPlayerPosition(player.y);
     loopIndexJS();
@@ -202,21 +222,6 @@ function draw() {
     drawBall();
     drawNet();
 }
-
-function winLose() {
-    if ((ball.x + ball.radius) > canvas.width) {
-        enemyScore++;
-        lives--;
-        if (lives <= 0) {
-            // ONCLICK: location.reload();
-            pause = true;
-
-        }
-    } else if ((ball.x - ball.radius) < 0) {
-        playerScore++;
-    }
-}
-
 
 function loop(timestamp) {
     let progress = timestamp - lastRender;
