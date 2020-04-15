@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Passable Pong</title>
+
+    <!--ICON: Font: Cambay, Background: Round, Background-Color: #209CEE-->
+    <link rel="shortcut icon" href="img/favicon-32x32.png" />
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/socket-test.css">
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<ul id="messages"></ul>
+<form action="">
+    <input id="m" autocomplete="off" /><button>Send</button>
+</form>
+
+
+<div id="displayWrapper">
+    <div id="display"></div>
+</div>
+
+
+<div id="canvasBox">
+    <canvas id="canvas" width="800" height="600">Canvas Not Loaded. Please change your browser or reload the page.
+    </canvas>
+</div>
+
+<script src="js/jquery.js"></script>
+<script src="js/socket-io-client.js"></script>
+<script src="js/socket-test.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
