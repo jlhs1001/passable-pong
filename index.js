@@ -13,14 +13,15 @@ let users = 0;
 
 let pause = false;
 
-let highScore = 0;
-
 let dx = bSpeed;
 let dy = -bSpeed;
 
 let player1 = {w: 10, h: 80, x: 50, y: 300};
 let player2 = {w: 10, h: 80, x: 750, y: 300};
-
+let score = {
+    p1: 0,
+    p2: 0
+};
 let user = 0;
 
 function ballWallCollision() {
@@ -32,6 +33,15 @@ function ballWallCollision() {
 
 }
 
+function newGame() {
+    player1.y = 300;
+    player2.y = 300;
+    ball.x = 400;
+    ball.y = 500;
+    dx = 2;
+    dy = -2
+}
+
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/public/index.html');
 });
@@ -40,6 +50,12 @@ io.on('connection', function (socket) {
     users++;
 
     user = users;
+
+    if (user === 1) {
+        socket.emit("user", user);
+    } else if (user === 2) {
+        socket.emit("user", user);
+    }
 
     // if (users >= 2) { run game ==> }
 
@@ -89,34 +105,17 @@ io.on('connection', function (socket) {
         dy += -1
     });
 
-    socket.on("newP1HighScore", function (playerScore) {
-        if (playerScore > highScore) {
-            highScore = playerScore;
-            socket.broadcast.emit("pushHighScore", highScore);
-        }
-    });
-
-    socket.on("newP2HighScore", function (player2Score) {
-        if (player2Score > highScore) {
-            highScore = player2Score;
-            socket.broadcast.emit("pushHighScore", highScore);
-        }
-    });
-
     function winLose() {
         if ((ball.x + ball.radius) >= 800) {
-            socket.broadcast.emit("collision", highScore);
-            player1.y = 300;
-            player2.y = 300;
-            ball.x = 400;
-            ball.y = 500;
+            score.p1++;
+            socket.broadcast.emit("score", score);
+            newGame();
         } else if ((ball.x - ball.radius) <= 0) {
-            socket.broadcast.emit("collision", highScore);
-            player1.y = 300;
-            player2.y = 300;
-            ball.x = 400;
-            ball.y = 500;
+            score.p2++;
+            socket.broadcast.emit("score", score);
+            newGame();
         }
+
     }
 
     function emitBallPos() {

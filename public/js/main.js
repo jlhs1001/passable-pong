@@ -3,8 +3,6 @@ const ctx = canvas.getContext('2d');
 const displayBox = document.getElementById("display");
 const socket = io();
 
-let lives = 3;
-
 let dir = 0;
 
 let user = 0;
@@ -12,7 +10,6 @@ let user = 0;
 let playerScore = 0;
 let enemyScore = 0;
 
-let displayHS = 0;
 
 let ball = {};
 
@@ -54,28 +51,18 @@ $(function () {
         ball.r = ballObject.radius;
     });
 
-    socket.on("collision", function (highScore) {
+    socket.on("collision", function () {
         if ((ball.x + ball.radius) > 800) {
             enemyScore++;
             socket.emit("player2ScoreUp");
-            lives--;
-        }
-        else if ((ball.x - ball.radius) < 0) {
+        } else if ((ball.x - ball.radius) < 0) {
             playerScore++;
             socket.emit("player1ScoreUp");
         }
-        if (lives <= 0) {
-            // ONCLICK: location.reload();
-            pause = true;
-        }
-        if (playerScore >= highScore || enemyScore >= highScore) {
-            socket.emit("newP1HighScore", playerScore);
-            socket.emit("newP2HighScore", enemyScore);
-        }
     });
 
-    socket.on("pushHighScore", function (highScore) {
-        displayHS = highScore;
+    socket.on("user", function (user) {
+        console.log(user)
     })
 });
 
@@ -97,10 +84,10 @@ document.addEventListener("keydown", function (e) {
 });
 
 function playerBallCollision(p) {
-    if ((ball.x + ball.radius) > p.x) {
-        if ((ball.y + ball.radius) > p.y && (ball.y - ball.radius) < (p.y + p.h)) {
-            socket.emit("PlayerBallCollision")
-        }
+    if ((ball.x + ball.radius) > p.x &&
+        (ball.y + ball.radius) > p.y &&
+        (ball.y - ball.radius) < (p.y + p.h)) {
+        socket.emit("PlayerBallCollision")
     }
 }
 
@@ -160,7 +147,7 @@ function drawPlayer() {
 
 
 function display() {
-    displayBox.innerText = `P1: ${playerScore} \xa0 P2: ${enemyScore} \xa0 High Score: ${displayHS} \xa0 Lives: ${lives}`
+    displayBox.innerText = `P1: ${playerScore} \xa0 P2: ${enemyScore}`
 }
 
 function drawNet() {
